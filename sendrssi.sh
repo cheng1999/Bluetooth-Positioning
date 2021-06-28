@@ -22,7 +22,6 @@ toloop () {
     echo $label:$rssi|nc $server $port -N
   fi
 
-
   sleep $period
 }
 
