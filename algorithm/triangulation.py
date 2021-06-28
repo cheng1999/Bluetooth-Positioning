@@ -3,45 +3,35 @@ import numpy as np
 from matplotlib import pyplot as plt
 plt.style.use(['ggplot'])
 
-ref_X_Y = np.array([[0,0],[1,1],[1,0],[0,1]])*50
-ref_X_Y
+GATEWAYS = np.array([[0,0],[1,1],[1,0],[0,1]])*50
 
-P_t = np.random.rand(2)*50
+beacon = np.random.rand(2)*50
 
-def _dist(ref_X_Y,P_target):
+# computing the distance betwen beacon and GATEWAYS
+def _dist(GATEWAYS,P_target):
     d = []
-    for i in range(len(ref_X_Y)):
-        d.append(np.linalg.norm(ref_X_Y[i]-P_target))
-        #d.append(np.sum((ref_X_Y[i]-P_target)**2)**.5)
+    for i in range(len(GATEWAYS)):
+        d.append(np.linalg.norm(GATEWAYS[i]-P_target))
+        #d.append(np.sum((GATEWAYS[i]-beaconarget)**2)**.5)
     return np.array(d)
 
-P_t = np.random.rand(2)*50
-R = _dist(ref_X_Y,P_t)
+beacon = np.random.rand(2)*50
+R = _dist(GATEWAYS,beacon)
 
 
-'''
-plt.scatter(ref_X_Y.T[0],ref_X_Y.T[1],marker='^')
-plt.scatter(P_t[0],P_t[1],marker='o')
-#plt.scatter(P_approach[0],P_approach[1],marker='x')
-for i in range(len(ref_X_Y)):
-    circle = plt.Circle(ref_X_Y[i],R[i],color='b',fill=False)
-    plt.gca().add_patch(circle)
-
-plt.show()
-'''
-
-# convert polar to cartesian
-def _p(ref_X_Y,theta,R):
+# convert polar to cartesian coordinate
+def _p(GATEWAYS,theta,R):
     P = []
-    for i in range(len(ref_X_Y)):
-        y = R[i]*np.sin(theta[i])+ref_X_Y[i][1]
-        x = R[i]*np.cos(theta[i])+ref_X_Y[i][0]
+    for i in range(len(GATEWAYS)):
+        y = R[i]*np.sin(theta[i])+GATEWAYS[i][1]
+        x = R[i]*np.cos(theta[i])+GATEWAYS[i][0]
         P.append([x,y])
     return np.array(P)
 
-def _cost(ref_X_Y,theta,R):
+# cost function
+def _cost(GATEWAYS,theta,R):
     
-    P = _p(ref_X_Y,theta,R)
+    P = _p(GATEWAYS,theta,R)
     
     cost = np.zeros(len(R))
     for i in range(len(P)):
@@ -51,9 +41,10 @@ def _cost(ref_X_Y,theta,R):
 
     return cost
 
-def _gradient(ref_X_Y,theta,R):
+# computing the gradient of cost function
+def _gradient(GATEWAYS,theta,R):
     
-    P = _p(ref_X_Y,theta,R)
+    P = _p(GATEWAYS,theta,R)
     
     gradient = np.zeros(len(R))
     cost = 0
@@ -61,15 +52,16 @@ def _gradient(ref_X_Y,theta,R):
     for i in range(len(P)):
         for j in range(len(P)):
             if i==j: continue
-            gradient[i]+=                 2*np.dot( (P[i]-P[j]) , R[i]*np.array([-np.sin(theta[i]),np.cos(theta[i])]))
+            gradient[i]+=2*np.dot( (P[i]-P[j]) , R[i]*np.array([-np.sin(theta[i]),np.cos(theta[i])]))
             
         for i in range(len(gradient)):
             if np.abs(np.sum(gradient[i]))>10e9:return None
     return np.array(gradient)
 
-def gradient_descent(ref_X_Y,R,learning_rate=0.0002,iterations=30):
-    theta = np.random.rand(len(ref_X_Y))
-    cost = _cost(ref_X_Y,theta,R)
+# gradient descent algorithm
+def gradient_descent(GATEWAYS,R,learning_rate=0.0002,iterations=30):
+    theta = np.random.rand(len(GATEWAYS))
+    cost = _cost(GATEWAYS,theta,R)
 
     m = len(R)
     cost_history = []
@@ -77,24 +69,25 @@ def gradient_descent(ref_X_Y,R,learning_rate=0.0002,iterations=30):
     gradient_history=[]
     
     for it in range(iterations):
-        gradient = _gradient(ref_X_Y,theta,R)
+        gradient = _gradient(GATEWAYS,theta,R)
         theta = theta -(1/m)*learning_rate*(gradient)
         
-        plot(ref_X_Y,P_t,theta,R,np.max(2*R))
+        plot(GATEWAYS,beacon,theta,R,np.max(2*R))
         
         theta_history.append(theta)
-        cost_history.append(_cost(ref_X_Y,theta,R))
+        cost_history.append(_cost(GATEWAYS,theta,R))
         gradient_history.append(gradient)
     return theta, np.array(cost_history).T, np.array(theta_history), np.array(gradient_history).T
 
-def plot(ref_X_Y,P_t,theta,R,lim):
+# plot to animate the numerical progress
+def plot(GATEWAYS,beacon,theta,R,lim):
     plt.cla()
-    P = _p(ref_X_Y,theta,R)
-    plt.scatter(ref_X_Y.T[0],ref_X_Y.T[1],marker='^')
-    plt.scatter(P_t[0],P_t[1],marker='o')
+    P = _p(GATEWAYS,theta,R)
+    plt.scatter(GATEWAYS.T[0],GATEWAYS.T[1],marker='^')
+    plt.scatter(beacon[0],beacon[1],marker='o')
     plt.scatter(P.T[0],P.T[1],marker='x')
-    for i in range(len(ref_X_Y)):
-        circle = plt.Circle(ref_X_Y[i],R[i],color='b',fill=False)
+    for i in range(len(GATEWAYS)):
+        circle = plt.Circle(GATEWAYS[i],R[i],color='b',fill=False)
         plt.gca().add_patch(circle)
     plt.pause(0.02)
 
@@ -102,7 +95,7 @@ lim = np.max(2*R)
 plt.xlim(-lim,lim)
 plt.ylim(-lim,lim)
 
-theta, cost_history, theta_history, gradient_history = gradient_descent(ref_X_Y,R)
+theta, cost_history, theta_history, gradient_history = gradient_descent(GATEWAYS,R)
 
 fig,ax = plt.subplots(figsize=(12,8))
 ax.set_ylabel('Cost')
