@@ -6,6 +6,8 @@ port=8080
 
 label=P1
 
+period=0.5
+
 getRSSI () {
   hcitool rssi $mac 2> /dev/null|grep -P '\-?[0-9]+' -o
 }
@@ -15,15 +17,15 @@ toloop () {
   if  [ -z "$rssi" ] ; then
     # recreate baseband conection
     sudo hcitool cc $mac  2> /dev/null
-    toloop 
   else
-    :
+    echo $label:$rssi
+    echo $label:$rssi|nc $server $port -N
   fi
 
-  echo $label:$rssi
-  #echo $label:$rssi|nc $server $port 
 
-  sleep 0.5
+  sleep $period
 }
 
-toloop | nc $server $port
+while true; do
+  toloop 
+done

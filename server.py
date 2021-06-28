@@ -1,19 +1,13 @@
-
 import asyncio, socket
 import time
 
 BEACON={}
 
 async def handle_client(reader, writer):
-    global BEACON
-    while True:
-        request = (await reader.read(255)).decode('utf8')
-
-        if not request: break
-
-        gateway, rssi = str(request).rstrip('\n').split(':')
-        BEACON[gateway]=rssi
-        await writer.drain()
+    request = (await reader.read(255)).decode('utf8')
+    
+    gateway, rssi = str(request).rstrip('\n').split(':')
+    BEACON[gateway]=rssi
     writer.close()
 
 async def run_server():
