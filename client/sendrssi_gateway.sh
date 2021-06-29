@@ -1,5 +1,10 @@
-
 #!/bin/bash
+
+<<COMMENT
+  This client is use for gateway, which check rssi of target beacon and send to server.
+COMMENT
+
+
 mac=D0:5A:FD:5A:54:E2
 server=192.168.1.10
 port=8080
